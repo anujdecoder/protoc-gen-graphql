@@ -1,0 +1,77 @@
+syntax="proto3";
+
+package example;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+import "graphql/graphql.proto";
+
+// Example description
+message Example {
+    // Field Comments
+    string id = 1;
+    uint32 complex_name = 2;
+    float float_value = 3;
+    bool bool_value = 4;
+    double double_value = 5;
+    Reference ref = 6;
+    repeated Reference refs = 7;
+    repeated int32 numbers = 8;
+    int32 as = 12;
+    bytes bts = 9;
+
+    EnumTest enum_value = 10;
+
+    repeated EnumTest enum_repeated = 11;
+
+    oneof value {
+        string first = 16;
+        Reference second = 13;
+    }
+
+    google.protobuf.Any any = 14;
+
+    google.protobuf.Timestamp  t = 15;
+}
+
+message Reference {
+
+}
+
+// EnumTest description
+enum EnumTest {
+    // Field Description
+    DEFAULT = 0;
+    VALUE_ONE = 1;
+    SKIP_ONE = 3;
+}
+
+service ExampleService {
+    rpc Greet(GreetRequest) returns (GreetResponse){
+        option(graphql.graphql_methods) = {
+            query: "greet"
+        };
+    }
+
+    rpc Echo(EchoRequest) returns (EchoResponse) {
+        option(graphql.graphql_methods) = {
+            mutation: "echo"
+        };
+    }
+}
+
+message EchoRequest {
+    string echo = 1;
+}
+
+message EchoResponse {
+    string name = 2;
+}
+
+message GreetRequest {
+    string id = 1;
+}
+
+message GreetResponse {
+    string name = 1;
+}

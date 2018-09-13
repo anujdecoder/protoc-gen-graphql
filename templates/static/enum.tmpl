@@ -1,0 +1,10 @@
+{{ define "Enum" }}
+{{ $name := .Name.PGGUpperCamelCase }}
+func Register{{ $name }}(s *schemabuilder.Schema) {
+    s.Enum({{ $name }}(0), map[string]interface{}{
+        {{ range .Values -}}
+        "{{ .Name }}" : {{ $name }}_{{ .Name }},
+        {{ end -}}
+    })
+}
+{{ end }}

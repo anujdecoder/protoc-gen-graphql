@@ -1,0 +1,22 @@
+{{ define "Message" }}
+{{ $name := .Name.PGGUpperCamelCase }}
+func Register{{ $name }}(s *schemabuilder.Schema) {
+    obj := s.Object("{{ $name }}", {{ $name }}{})
+    obj.Description = `{{ .Comments | trimSpace }}`
+    {{ with $key := getKey . }}obj.Key("{{ $key }}"){{- end }}
+    {{ range .OneOfs }}
+    {{ $union := print "union" $name .Name.PGGUpperCamelCase }}
+    obj.FieldFunc("{{ .Name.LowerCamelCase }}", func(self *{{ $name }}) *{{ $union }} {
+        switch v := self.{{ .Name.PGGUpperCamelCase }}.(type) {
+            {{ range .Fields }}
+            case *{{ $name }}_{{ .Name.PGGUpperCamelCase }}:
+                return &{{ $union }}{
+                    {{ $name }}_{{ .Name.PGGUpperCamelCase }}: v,
+                }
+            {{- end }}
+        }
+        return nil
+    })
+    {{- end }}
+}
+{{ end }}

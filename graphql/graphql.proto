@@ -1,0 +1,27 @@
+syntax="proto3";
+
+package graphql;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/srikrsna/protoc-gen-graphql/graphql";
+
+extend google.protobuf.FieldOptions {
+    FieldOptions graphql_fields = 9892748;
+}
+
+message FieldOptions {
+    bool key = 1;
+    bool ignore = 2;
+}
+
+extend google.protobuf.MethodOptions {
+    MethodOptions graphql_methods = 9892748;
+}
+
+message MethodOptions {
+    oneof type {
+        string query = 1;
+        string mutation = 2;
+    }
+}

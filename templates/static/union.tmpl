@@ -1,0 +1,15 @@
+{{ define "Union" -}}
+{{ $name := .Message.Name.PGGUpperCamelCase }}
+{{ $union := print "union" $name .Name.PGGUpperCamelCase -}}
+type {{ $union }} struct {
+    schemabuilder.Union
+    {{ range .Fields -}}
+    *{{ $name }}_{{ .Name.PGGUpperCamelCase }}
+    {{ end }}
+}
+{{ range .Fields -}}
+func Register{{ $name }}_{{ .Name.PGGUpperCamelCase }}(s *schemabuilder.Schema) {
+    s.Object("{{ $name }}_{{ .Name.PGGUpperCamelCase }}", {{ $name }}_{{ .Name.PGGUpperCamelCase }}{})
+}
+{{ end }}
+{{ end }}

@@ -1,0 +1,13 @@
+{{ define "Service" }}
+func Stitch{{ .Name.PGGUpperCamelCase }}Schema(s *schemabuilder.Schema, cli {{ .Name.PGGUpperCamelCase }}Client) {
+    {{ range .Methods }}
+    {{- if $qt := getMethodType . }}
+    s.{{ $qt.Type }}().FieldFunc("{{ $qt.MethodName }}", func(ctx context.Context, args struct{
+        In {{ .Input.TypeName.Pointer }}
+    }) ( {{ .Output.TypeName.Pointer }}, error) {
+        return cli.{{ .Name.PGGUpperCamelCase }}(ctx, args.In)
+    })
+    {{ end -}}
+    {{ end -}}
+}
+{{ end }}
