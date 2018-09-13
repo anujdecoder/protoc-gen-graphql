@@ -3,8 +3,8 @@ func Stitch{{ .Name.PGGUpperCamelCase }}Schema(s *schemabuilder.Schema, cli {{ .
     {{ range .Methods }}
     {{- if $qt := getMethodType . }}
     s.{{ $qt.Type }}().FieldFunc("{{ $qt.MethodName }}", func(ctx context.Context, args struct{
-        In {{ .Input.TypeName.Pointer }}
-    }) ( {{ .Output.TypeName.Pointer }}, error) {
+        In *{{ if .Input.BuildTarget }}{{ else }}{{ .Input.Package.GoName }}.{{ end }}{{ .Input.Name }}
+    }) ( *{{ if .Output.BuildTarget }}{{ else }}{{ .Output.Package.GoName }}.{{ end }}{{ .Output.Name }}, error) {
         return cli.{{ .Name.PGGUpperCamelCase }}(ctx, args.In)
     })
     {{ end -}}

@@ -16,7 +16,7 @@ message FieldOptions {
 }
 
 extend google.protobuf.MethodOptions {
-    MethodOptions graphql_methods = 9892748;
+    MethodOptions schema = 9892748;
 }
 
 message MethodOptions {

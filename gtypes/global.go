@@ -4,101 +4,83 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/duration"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
-	"strings"
+	"reflect"
 	"time"
 )
 
 var Schema = schemabuilder.NewSchema()
 
 func init() {
-	RegisterWellKnownTypes(Schema)
+	RegisterWellKnownTypes()
 }
 
-func RegisterWellKnownTypes(s *schemabuilder.Schema) {
-	RegisterAny(s)
+func RegisterWellKnownTypes() {
+	RegisterDuration()
+	RegisterTimestamp()
+	RegisterEmpty()
 }
 
-func RegisterAny(s *schemabuilder.Schema) {
-	obj := s.Object("Google.Protobuf.Any", Any{})
-	obj.FieldFunc("typeUrl", func(in *Any) string {
-		return in.in.TypeUrl
+func RegisterEmpty() {
+	typ := reflect.TypeOf((*empty.Empty)(nil)).Elem()
+	schemabuilder.RegisterScalar(typ, "Empty", func(value interface{}, target reflect.Value) error {
+		return nil
 	})
-	obj.FieldFunc("value", func(in *Any) []byte {
-		return in.in.Value
+}
+
+func RegisterDuration() {
+	typ := reflect.TypeOf((*duration.Duration)(nil)).Elem()
+	schemabuilder.RegisterScalar(typ, "Duration", func(value interface{}, target reflect.Value) error {
+		v, ok := value.(string)
+		if !ok {
+			return errors.New("invalid type expected a string")
+		}
+
+		unq, err := unquote(v)
+		if err != nil {
+			return err
+		}
+
+		d, err := time.ParseDuration(unq)
+		if err != nil {
+			return fmt.Errorf("bad Duration: %v", err)
+		}
+
+		ns := d.Nanoseconds()
+		s := ns / 1e9
+		ns %= 1e9
+		target.Field(0).SetInt(s)
+		target.Field(1).SetInt(ns)
+
+		return nil
 	})
 }
 
-type Any struct {
-	in *any.Any `graphql:"-"`
-}
+func RegisterTimestamp() {
+	typ := reflect.TypeOf((*timestamp.Timestamp)(nil)).Elem()
+	schemabuilder.RegisterScalar(typ, "Timestamp", func(value interface{}, target reflect.Value) error {
+		v, ok := value.(string)
+		if !ok {
+			return errors.New("invalid type expected a string")
+		}
 
-func AnyToScalar(a *any.Any) (*Any, error) {
-	return &Any{in: a}, nil
-}
+		unq, err := unquote(v)
+		if err != nil {
+			return err
+		}
 
-func AnyFromScalar(a *Any) (*any.Any, error) {
-	return a.in, nil
-}
+		t, err := time.Parse(time.RFC3339Nano, unq)
+		if err != nil {
+			return fmt.Errorf("bad Timestamp: %v", err)
+		}
 
-func TimestampToScalar(t *timestamp.Timestamp) (time.Time, error) {
-	return ptypes.Timestamp(t)
-}
-
-func TimestampFromScalar(t time.Time) (*timestamp.Timestamp, error) {
-	return ptypes.TimestampProto(t)
-}
-
-const secondInNanos = int64(time.Second / time.Nanosecond)
-
-func DurationToScalar(d duration.Duration) (string, error) {
-	s, ns := d.Seconds, int64(d.Nanos)
-	if ns <= -secondInNanos || ns >= secondInNanos {
-		return "", fmt.Errorf("ns out of range (%v, %v)", -secondInNanos, secondInNanos)
-	}
-	if (s > 0 && ns < 0) || (s < 0 && ns > 0) {
-		return "", errors.New("signs of seconds and nanos do not match")
-	}
-	if s < 0 {
-		ns = -ns
-	}
-	var out strings.Builder
-
-	x := fmt.Sprintf("%d.%09d", s, ns)
-	x = strings.TrimSuffix(x, "000")
-	x = strings.TrimSuffix(x, "000")
-	x = strings.TrimSuffix(x, ".000")
-
-	out.WriteRune('"')
-	out.WriteString(x)
-	out.WriteString(`s"`)
-
-	return out.String(), nil
-}
-
-func DurationFromScalar(in string) (*duration.Duration, error) {
-	unq, err := unquote(in)
-	if err != nil {
-		return nil, err
-	}
-
-	d, err := time.ParseDuration(unq)
-	if err != nil {
-		return nil, fmt.Errorf("bad Duration: %v", err)
-	}
-
-	ns := d.Nanoseconds()
-	s := ns / 1e9
-	ns %= 1e9
-
-	return &duration.Duration{
-		Seconds: s,
-		Nanos:   int32(ns),
-	}, nil
+		target.Field(0).SetInt(t.Unix())
+		target.Field(1).SetInt(int64(t.Nanosecond()))
+		return nil
+	})
 }
 
 func unquote(s string) (string, error) {

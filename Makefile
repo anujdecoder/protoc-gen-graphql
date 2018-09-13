@@ -6,7 +6,7 @@ example: install build-proto-example
 	protoc -I /usr/local/include \
     -I ${LOCAL_PATH} \
     -I ${GOPATH}/src \
-    --graphql_out=plugins:.. \
+    --graphql_out=plugins:. \
     example/**.proto
 
 .PHONY: install
@@ -22,7 +22,7 @@ build-proto-example:
 	protoc -I /usr/local/include \
         -I ${LOCAL_PATH} \
         -I ${GOPATH}/src \
-        --go_out=plugins=grpc:.. \
+        --go_out=plugins=grpc:. \
         example/**.proto
 
 build-graphql-proto:

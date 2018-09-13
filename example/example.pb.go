@@ -73,8 +73,8 @@ type Example struct {
 	//	*Example_First
 	//	*Example_Second
 	Value                isExample_Value      `protobuf_oneof:"value" graphql:"-"`
-	Any                  *any.Any             `protobuf:"bytes,14,opt,name=any" json:"any,omitempty" graphql:"-"`
-	T                    *timestamp.Timestamp `protobuf:"bytes,15,opt,name=t" json:"t,omitempty" graphql:"-"`
+	Any                  *any.Any             `protobuf:"bytes,14,opt,name=any" json:"any,omitempty" graphql:"any"`
+	T                    *timestamp.Timestamp `protobuf:"bytes,15,opt,name=t" json:"t,omitempty" graphql:"t"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-" graphql:"-"`
 	XXX_unrecognized     []byte               `json:"-" graphql:"-"`
 	XXX_sizecache        int32                `json:"-" graphql:"-"`

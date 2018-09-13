@@ -13,19 +13,15 @@ import (
 var _ = context.TODO
 
 func init() {
-	RegisterGqlTypes(gtypes.Schema)
-}
-
-func RegisterGqlTypes(s *schemabuilder.Schema) {
-	RegisterExample(s)
-	RegisterReference(s)
-	RegisterEchoRequest(s)
-	RegisterEchoResponse(s)
-	RegisterGreetRequest(s)
-	RegisterGreetResponse(s)
-	RegisterEnumTest(s)
-	RegisterExample_First(s)
-	RegisterExample_Second(s)
+	RegisterExample(gtypes.Schema)
+	RegisterReference(gtypes.Schema)
+	RegisterEchoRequest(gtypes.Schema)
+	RegisterEchoResponse(gtypes.Schema)
+	RegisterGreetRequest(gtypes.Schema)
+	RegisterGreetResponse(gtypes.Schema)
+	RegisterEnumTest(gtypes.Schema)
+	RegisterExample_First(gtypes.Schema)
+	RegisterExample_Second(gtypes.Schema)
 }
 
 func RegisterExample(s *schemabuilder.Schema) {

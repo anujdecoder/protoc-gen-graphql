@@ -48,13 +48,13 @@ enum EnumTest {
 
 service ExampleService {
     rpc Greet(GreetRequest) returns (GreetResponse){
-        option(graphql.graphql_methods) = {
+        option (graphql.schema) = {
             query: "greet"
         };
     }
 
     rpc Echo(EchoRequest) returns (EchoResponse) {
-        option(graphql.graphql_methods) = {
+        option (graphql.schema) = {
             mutation: "echo"
         };
     }

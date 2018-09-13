@@ -96,19 +96,19 @@ func (v *tagExtractor) VisitField(f pgs.Field) (pgs.Visitor, error) {
 		v.tags[msgName] = map[string]*structtag.Tags{}
 	}
 
-	tags, err := structtag.Parse("graphql:"+strconv.Quote(f.Name().Transform(v.mod, v.first, v.sep).String()))
+	tags, err := structtag.Parse("graphql:" + strconv.Quote(f.Name().Transform(v.mod, v.first, v.sep).String()))
 	if err != nil {
 		return nil, err
 	}
 
-	if f.Descriptor().TypeName != nil {
-		if _, ok := v.wk[*f.Descriptor().TypeName]; ok {
-			tags, err = structtag.Parse(`graphql:"-"`)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
+	//if f.Descriptor().TypeName != nil {
+	//	if _, ok := v.wk[*f.Descriptor().TypeName]; ok {
+	//		tags, err = structtag.Parse(`graphql:"-"`)
+	//		if err != nil {
+	//			return nil, err
+	//		}
+	//	}
+	//}
 
 	v.tags[msgName][f.Name().PGGUpperCamelCase().String()] = tags
 

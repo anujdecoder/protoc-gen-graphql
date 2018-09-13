@@ -33,7 +33,7 @@ var T = template.New("File").Funcs(template.FuncMap{
 		return ""
 	},
 	"getMethodType": func(m pgs.Method) (*struct {
-		Type string
+		Type       string
 		MethodName string
 	}, error) {
 		var o graphql.MethodOptions
@@ -44,22 +44,56 @@ var T = template.New("File").Funcs(template.FuncMap{
 		switch v := o.Type.(type) {
 		case *graphql.MethodOptions_Query:
 			return &struct {
-				Type string
+				Type       string
 				MethodName string
 			}{
-				Type: "Query",
+				Type:       "Query",
 				MethodName: v.Query,
 			}, nil
 		case *graphql.MethodOptions_Mutation:
 			return &struct {
-				Type string
+				Type       string
 				MethodName string
 			}{
-				Type: "Mutation",
+				Type:       "Mutation",
 				MethodName: v.Mutation,
 			}, nil
 		}
 
 		return nil, nil
+	},
+	"getImports": func(f pgs.File) ([]pgs.Package, error) {
+		additionalImports := map[string]pgs.Package{}
+
+		for _, v := range f.Services() {
+			for _, v := range v.Methods() {
+				var options graphql.MethodOptions
+
+				ok, err := v.Extension(graphql.E_GraphqlMethods, &options)
+				if err != nil {
+					return nil, err
+				}
+
+				if !ok {
+					continue
+				}
+
+				if !v.Input().BuildTarget() {
+					additionalImports[v.Input().Package().GoName().String()] = v.Input().Package()
+				}
+
+				if !v.Output().BuildTarget() {
+					additionalImports[v.Output().Package().GoName().String()] = v.Output().Package()
+				}
+			}
+		}
+
+		var imports []pgs.Package
+
+		for _, v := range additionalImports {
+			imports = append(imports, v)
+		}
+
+		return imports, nil
 	},
 })
